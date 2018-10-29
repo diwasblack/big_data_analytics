@@ -1,0 +1,106 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{times}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\title{Human Activity Recognition Using Smartphones \\ \normalsize Project 1 \\ \small Big Data Analytics (CS 696-16)}
+\author{Diwas Sharma \\ A25264728}
+\date{September 17, 2018}
+
+\singlespace
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+Smartphone nowadays contains a number of sensor such as accelerometer, gyroscope, light sensor, proximity sensor, fingerprint sensor, magnetometer sensor, etc. The goal of the project
+is to predict the activity of a person from the sensor readings. The human activity recognition dataset\cite{anguita2013public} is a labelled dataset that has the readings from accelerometer
+and gyroscope.
+
+The dataset contains 10299 instances with 561 feature each which are labelled as one of the activity among "WALKING, "WALKING\_UPSTAIRS", "WALKING\_DOWNSTAIRS", "SITTING", "STANDING" and "LAYING".
+
+\section{Methods}
+
+\subsection{Data Acquisition}
+The human activity recognition dataset can be obtained from either UCI machine learning repository \footnote{https://archive.ics.uci.edu/ml/datasets/human+activity+recognition+using+smartphones}
+or kaggle \footnote{https://www.kaggle.com/uciml/human-activity-recognition-with-smartphones}.
+
+\subsection{Models}
+The scikit-learn\footnote{http://scikit-learn.org/stable/index.html} python library was used to implement the classifier models. The models implemented are as follows,
+
+\begin{itemize}
+    \item Regularized Logistic Regression \cite{hosmer2013applied}
+    \item Support Vector Machine \cite{cortes1995support}
+    \item Random Forest \cite{liaw2002classification}
+\end{itemize}
+
+\subsection{Training and Testing}
+At the first, the dataset is divided into training and test set using a 2/3 : 1/3 split. Then, 5 fold cross validation technique is used to select the best hyperparameters for the
+models. The models are then trained on the whole training set using the best hyperparameters obtained from the cross validation step.
+
+The models are then evaluated on the test set to contrast their performance.
+
+\section{Results}
+\subsection{Data Visualization}
+It is better to first visualize the data in order to understand it. The t-SNE\cite{maaten2008visualizing} algorithm can be used to reduce a high dimensional data to either 2 or 3 dimensions so that it can visulized
+using plotting library such as matplotlib\cite{hunter2007matplotlib}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{dataset.png}
+  \caption{Visualization of dataset using t-SNE algorithm}
+  \label{fig:dataset}
+\end{figure}
+
+\subsection{Performance}
+The test accuracies of the models for the dataset is shown in Table \ref{tbl:test_accuracies}.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ l c r }
+\hline
+Model & Test Accuracy \\
+\hline
+Regularized Logistic Regression & 97.48\\
+Support Vector Machine & 98.40 \\
+Random Forest & 95.88 \\
+\hline
+\end{tabular}
+\caption{Test accuracies of models}
+\label{tbl:test_accuracies}
+\end{table}
+
+\section{Conclusion}
+Thus it shows that for the given dataset it is possible to predict the human activity with high accuracy based on the readings from accelerometer and gyro sensor embedded
+within a smartphone.
+
+\newpage
+\bibliography{report}
+\bibliographystyle{ieeetr}
+\newpage
+
+\section*{Appendix}
+% \addtocounter{section}{1}
+
+\subsection{Source Code}
+\lstinputlisting[language=python]{"human_activity.py"}
+
+\subsection{Libraries Used}
+
+\begin{itemize}
+    \item numpy \url{http://www.numpy.org/}
+    \item pandas \url{https://pandas.pydata.org/}
+    \item matplotlib \url{https://matplotlib.org}
+    \item scikit-learn \url{http://scikit-learn.org/stable/}
+\end{itemize}
+
+\end{document}
