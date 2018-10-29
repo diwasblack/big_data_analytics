@@ -1,0 +1,152 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{times}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\title{Monkey Species Identifier\\ \normalsize Project 2 \\ \small Big Data Analytics (CS 696-16)}
+\author{Diwas Sharma \\ A25264728}
+\date{October 22, 2018}
+
+\singlespace
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+Constructing a classifier for automated categorization of images is not an easy task. It is further complicated by
+the fact that each point in the image has some information about the color along with its spatial information. The aim of this
+project is to construct a image classifier for identifying the species of a monkey.
+
+\subsection{Dataset}
+The dataset that was used in this project was obtained from kaggle \footnote{\url{https://www.kaggle.com/slothkong/10-monkey-species}}.
+The dataset consists of colored images of 10 monkey species which are distributed as shown in table \ref{tbl:dataset}. 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+Class                        & Training samples & Test samples \\
+\hline
+mantled\_howler              & 131              & 26 \\
+patas\_monkey                & 139              & 28 \\
+bald\_uakari                 & 137              & 27 \\
+japanese\_macaque            & 152              & 30 \\
+pygmy\_marmoset              & 131              & 26 \\
+white\_headed\_capuchin      & 141              & 28 \\
+silvery\_marmoset            & 132              & 26 \\
+common\_squirrel\_monkey     & 142              & 28 \\
+black\_headed\_night\_monkey & 133              & 27 \\
+nilgiri\_langur              & 132              & 26 \\
+\hline
+& 1098 & 272 \\
+\end{tabular}
+\caption{Data distribution}
+\label{tbl:dataset}
+\end{table}
+
+\subsection{Data Augmentation}
+Since most of the classifier models generalize better when trained on larger dataset,
+it is better to gather more data when possible. The original images on the dataset can be used
+to generate new images as follows,
+
+\begin{itemize}
+    \item \textbf{Horizontal Flip:} Since flipping a image horizontally should not change the class assignment, it can be safely used to augment the dataset.
+    \item \textbf{Rotation:} Another way to augment the dataset would be randomly rotating the image by a small degree $[-5, 5]$.
+\end{itemize}
+
+By randomly using the above techniques, the original dataset was used to create a total of 3294 image for training and 
+816 image for testing.
+
+\subsection{Data preprocessing}
+Since the original images had varying image size which could be even as large as 1900 by 2000 pixels, the images were resized to a fixed image size of
+200 by 200 pixels. The 8 bit unsigned integer representation of the images were then converted to the 32 bit floating point representation that could be used with
+classifiers.
+
+\section{Methods}
+
+\subsection{Feature Extraction}
+The Xception\cite{chollet2017xception} network initialized with weights trained on ImageNet dataset was used to extract meaningful features from an image.
+The network would take the $200 * 200 * 3$ image as input and generate a $7 * 7 * 2048$ tensor which could be used as features for classification algorithms.
+
+\subsection{Classification Model}
+A three layer neural network was used as the classifier model for identifying the monkey species. The architecture of the neural network model is listed below.
+
+\begin{itemize}
+    \item Hidden Layer
+    \begin{itemize}
+        \item Units: 512
+        \item Activation: ReLu
+        \item Regularization: Dropout (rate=0.5) 
+    \end{itemize}
+
+    \item Output Layer
+    \begin{itemize}
+        \item Units: 10
+        \item Activation: Softmax
+    \end{itemize}
+\end{itemize}
+
+\subsection{Training and Testing}
+The augmented training dataset is used to train the model after extracting the features using the Xception network and
+the augemented test dataset is used to evaluate the performance of the classification model on the training dataset.
+
+\section{Results}
+The performance of the classifier on the test set is shown in table \ref{tbl:test_performance}.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+Class & Precision & Recall & Fscore & Support \\
+\hline
+mantled\_howler & 0.98717949 & 0.98717949 & 0.98717949 & 78 \\
+patas\_monkey & 0.97530864 & 0.94047619 & 0.95757576 & 84 \\
+bald\_uakari & 1.0 & 0.43209877 & 0.60344828 & 81 \\
+japanese\_macaque & 0.97333333 & 0.81111111 & 0.88484848 & 90 \\
+pygmy\_marmoset & 0.9625 & 0.98717949 & 0.97468354 & 78 \\
+white\_headed\_capuchin & 1.0 & 0.9047619 & 0.95 & 84 \\
+silvery\_marmoset & 0.47852761 & 1.0 & 0.6473029 & 78 \\
+common\_squirrel\_monkey & 0.70338983 & 0.98809524 & 0.82178218 & 84 \\
+black\_headed\_night\_monkey & 1.0 & 0.43209877 & 0.60344828 & 81 \\
+nilgiri\_langur & 1.0 & 0.96153846 & 0.98039216 & 78 \\
+\hline
+\end{tabular}
+\caption{Test performance of the model}
+\label{tbl:test_performance}
+\end{table}
+
+\section{Conclusion}
+The classifier performs resonably well for most classes except for the "bald uakari", "silvery marmoset", and "black headed night monkey" classes.
+The Fscore for those classes are quite low(around 0.6) compared to Fscore of other classes which are around 0.9.
+
+\newpage
+\bibliography{report}
+\bibliographystyle{ieeetr}
+\newpage
+
+\section*{Appendix}
+% \addtocounter{section}{1}
+
+\subsection{Source Code}
+\lstinputlisting[language=python]{"monkey_classifier.py"}
+
+\subsection{Libraries Used}
+
+\begin{itemize}
+    \item numpy \url{http://www.numpy.org/}
+    \item keras \url{https://keras.io/}
+    \item scikit-learn \url{http://scikit-learn.org/stable/}
+\end{itemize}
+
+\end{document}
+
+\end{document}
