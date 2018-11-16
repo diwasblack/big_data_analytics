@@ -1,5 +1,3 @@
-all:
-	pdflatex report
-	bibtex report
-	pdflatex report
-	pdflatex report
+.PHONY: report2
+report2:
+	$(MAKE) -C report2 all
