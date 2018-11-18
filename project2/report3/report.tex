@@ -1,0 +1,222 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{times}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{Monkey Species Identifier\\ \normalsize Project 3 \\ \small Big Data Analytics (CS 696-16)}
+\author{Diwas Sharma \\ A25264728}
+\date{November 19, 2018}
+
+\singlespace
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+
+\pagenumbering{arabic}% Arabic page numbers (and reset to 1)
+
+\section{Introduction}
+Constructing a classifier for automated categorization of images is not an easy task. It is further complicated by
+the fact that each point in the image has some information about the color along with its spatial information. The aim of this
+project is to construct a image classifier for identifying the species of a monkey.
+
+\subsection{Dataset}
+The dataset that was used in this project was obtained from kaggle \footnote{\url{https://www.kaggle.com/slothkong/10-monkey-species}}.
+The dataset consists of colored images of 10 monkey species which are distributed as shown in table \ref{tbl:dataset}. 
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+Class                        & Training samples & Test samples \\
+\hline
+mantled\_howler              & 131              & 26 \\
+patas\_monkey                & 139              & 28 \\
+bald\_uakari                 & 137              & 27 \\
+japanese\_macaque            & 152              & 30 \\
+pygmy\_marmoset              & 131              & 26 \\
+white\_headed\_capuchin      & 141              & 28 \\
+silvery\_marmoset            & 132              & 26 \\
+common\_squirrel\_monkey     & 142              & 28 \\
+black\_headed\_night\_monkey & 133              & 27 \\
+nilgiri\_langur              & 132              & 26 \\
+\hline
+& 1098 & 272 \\
+\end{tabular}
+\caption{Data distribution}
+\label{tbl:dataset}
+\end{table}
+
+\subsection{Data Augmentation}
+Since most of the classifier models generalize better when trained on larger dataset,
+it is better to gather more data when possible. The original images on the dataset can be used
+to generate new images as follows,
+
+\begin{itemize}
+    \item \textbf{Horizontal Flip:} Since flipping a image horizontally should not change the class assignment, it can be safely used to augment the dataset.
+    \item \textbf{Rotation:} Another way to augment the dataset would be randomly rotating the image by a small degree $[-5, 5]$.
+\end{itemize}
+
+By randomly using the above techniques, the original dataset was used to create a total of 3294 image for training and 
+816 image for testing.
+
+\subsection{Data preprocessing}
+Since the original images had varying image size which could be even as large as 1900 by 2000 pixels, the images were resized to a fixed image size of
+200 by 200 pixels. The 8 bit unsigned integer representation of the images were then converted to the 32 bit floating point representation that could be used with
+classifiers.
+
+\section{Methods}
+
+\subsection{Feature Extraction}
+\subsubsection{Principal Component Analysis}
+The implementation of principal component analysis(PCA) algorithm found in scikit-learn\cite{pedregosa2011scikit} library was used to extract 3291 components from each image.
+
+\subsubsection{Xception network}
+The Xception\cite{chollet2017xception} network initialized with weights trained on ImageNet dataset was used to extract meaningful features from an image.
+The network would take the $200 * 200 * 3$ image as input and generate a $7 * 7 * 2048$ tensor which could be used as features for classification algorithms.
+
+\subsection{Classification Models}
+
+\subsubsection{Support Vector Machine}
+The implementation of the support vector machine(SVM) found in scikit-learn\cite{pedregosa2011scikit} library was also used as a model for classification.
+
+\subsubsection{Neural network}
+A three layer neural network(NN) with the architecture shown below was also used as a classifier.
+
+\begin{itemize}
+    \item Hidden Layer
+    \begin{itemize}
+        \item Units: 512
+        \item Activation: ReLu
+        \item Regularization: Dropout (rate=0.5) 
+    \end{itemize}
+
+    \item Output Layer
+    \begin{itemize}
+        \item Units: 10
+        \item Activation: Softmax
+    \end{itemize}
+\end{itemize}
+
+\subsection{Training and Testing}
+The augmented training dataset is used to train the model after extracting the features using one of the feature extraction method 
+and the performance of the classifiers were measured on the augmented test set.
+
+\section{Results}
+The table \ref{tbl:performance_pca_nn} shows the performance of NN model when PCA was used during the feature extraction.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{Fscore} & \textbf{Support} \\
+\hline
+mantled\_howler & 0.47674419 & 0.52564103 & 0.5 & 78 \\
+patas\_monkey & 0.59459459 & 0.52380952 & 0.55696203 & 84 \\
+bald\_uakari & 0.77108434 & 0.79012346 & 0.7804878 & 81 \\
+japanese\_macaque & 0.58 & 0.64444444 & 0.61052632 & 90 \\
+pygmy\_marmoset & 0.53658537 & 0.28205128 & 0.3697479 & 78 \\
+white\_headed\_capuchin & 0.39759036 & 0.39285714 & 0.39520958 & 84 \\
+silvery\_marmoset & 0.49180328 & 0.76923077 & 0.6 & 78 \\
+common\_squirrel\_monkey & 0.52631579 & 0.47619048 & 0.5 & 84 \\
+black\_headed\_night\_monkey & 0.59302326 & 0.62962963 & 0.61077844 & 81 \\
+nilgiri\_langur & 0.43076923 & 0.35897436 & 0.39160839 & 78 \\
+\hline
+average & 0.5398 & 0.5392 & 0.5315 & \\
+\end{tabular}
+\caption{Test performance of the PCA + NN}
+\label{tbl:performance_pca_nn}
+\end{table}
+
+The table \ref{tbl:performance_xception_nn} shows the best performance achieved by the NN model with Xception network as
+feature extraction. However, the performance of the NN varied greatly during training which might have been because of being stuck in
+local minima during the training.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{Fscore} & \textbf{Support} \\
+\hline
+mantled\_howler & 0.98717949 & 0.98717949 & 0.98717949 & 78 \\
+patas\_monkey & 0.97530864 & 0.94047619 & 0.95757576 & 84 \\
+bald\_uakari & 1.0 & 0.43209877 & 0.60344828 & 81 \\
+japanese\_macaque & 0.97333333 & 0.81111111 & 0.88484848 & 90 \\
+pygmy\_marmoset & 0.9625 & 0.98717949 & 0.97468354 & 78 \\
+white\_headed\_capuchin & 1.0 & 0.9047619 & 0.95 & 84 \\
+silvery\_marmoset & 0.47852761 & 1.0 & 0.6473029 & 78 \\
+common\_squirrel\_monkey & 0.70338983 & 0.98809524 & 0.82178218 & 84 \\
+black\_headed\_night\_monkey & 1.0 & 0.43209877 & 0.60344828 & 81 \\
+nilgiri\_langur & 1.0 & 0.96153846 & 0.98039216 & 78 \\
+\hline
+average & 0.9080 & 0.8445 & 0.8410 & \\
+\end{tabular}
+\caption{Test performance of the Xception + NN}
+\label{tbl:performance_xception_nn}
+\end{table}
+
+
+In a similar manner, the table \ref{tbl:performance_xception_svm} shows the performance of the SVM model with 
+Xception network as feature extraction. It shows that the performance shown by the SVM with Xception network is quite good.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l c c c r }
+\hline
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{Fscore} & \textbf{Support} \\
+\hline
+mantled\_howler & 1.0 & 0.98717949 & 0.99354839 & 78 \\
+patas\_monkey & 1.0 & 1.0 & 1.0 & 84 \\
+bald\_uakari & 1.0 & 0.96296296 & 0.98113208 & 81 \\
+japanese\_macaque & 1.0 & 0.97777778 & 0.98876404 & 90 \\
+pygmy\_marmoset & 1.0 & 1.0 & 1.0 & 78 \\
+white\_headed\_capuchin & 1.0 & 1.0 & 1.0 & 84 \\
+silvery\_marmoset & 0.97402597 & 0.96153846 & 0.96774194 & 78 \\
+common\_squirrel\_monkey & 0.95454545 & 1.0 & 0.97674419 & 84 \\
+black\_headed\_night\_monkey & 0.96385542 & 0.98765432 & 0.97560976 & 81 \\
+nilgiri\_langur & 0.98734177 & 1.0 & 0.99363057 & 78 \\
+\hline
+average & 0.9879 & 0.9877 & 0.9877 & \\
+\end{tabular}
+\caption{Test performance of the Xception + SVM}
+\label{tbl:performance_xception_svm}
+\end{table}
+
+
+\section{Conclusion}
+It was observed that the SVM classifier with Xception network as feature extraction model was the best performing 
+system with an average fscore of 0.9877.
+
+\newpage
+\bibliography{report}
+\bibliographystyle{ieeetr}
+\newpage
+
+\section*{Appendix}
+% \addtocounter{section}{1}
+
+\subsection{Source Code}
+\lstinputlisting[language=python]{"monkey_classifier.py"}
+
+\subsection{Libraries Used}
+
+\begin{itemize}
+    \item numpy \url{http://www.numpy.org/}
+    \item keras \url{https://keras.io/}
+    \item scikit-learn \url{http://scikit-learn.org/stable/}
+\end{itemize}
+
+\end{document}
+
+\end{document}
